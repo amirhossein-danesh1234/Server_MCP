@@ -26,13 +26,19 @@ def within_workspace(root: Path, relative: str, *, write: bool = False) -> Path:
     resolved = (root / candidate).resolve(strict=False)
     if not resolved.is_relative_to(root):
         raise PermissionError("Path escapes workspace")
-    if write:
-        # Reject symlinks in any existing component; no silent write-through.
-        node = root
-        for part in candidate.parts:
-            node = node / part
-            if node.is_symlink():
-                raise PermissionError("Writing through symlinks is prohibited")
+    # Check the actual target too: a harmless-looking symlink might point to .env
+    # or another blocked file still inside the allowed root.
+    real_parts = resolved.relative_to(root).parts
+    if any(part in DENIED_PARTS or part.startswith(".env.") for part in real_parts):
+        raise PermissionError("Sensitive resolved path blocked")
+    if resolved.suffix.lower() in DENIED_SUFFIXES:
+        raise PermissionError("Sensitive resolved file type blocked")
+    # Reject links for both reads and writes; don't traverse attacker-chosen in-root links.
+    node = root
+    for part in candidate.parts:
+        node = node / part
+        if node.is_symlink():
+            raise PermissionError("Symbolic links are prohibited")
     return resolved
 
 
