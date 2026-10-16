@@ -1,0 +1,35 @@
+[Unit]
+Description=Server MCP Agent (OAuth-protected MCP resource server)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=server-mcp
+Group=server-mcp
+WorkingDirectory=/opt/server-mcp
+Environment=PYTHONUNBUFFERED=1
+Environment=SERVER_MCP_CONFIG=/etc/server-mcp/config.toml
+ExecStart=/opt/server-mcp/.venv/bin/server-mcp
+Restart=on-failure
+RestartSec=5
+UMask=0077
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/server-mcp
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+SystemCallArchitectures=native
+
+# Do not grant Docker socket access or privileged capabilities by default.
+# Workspace writes require deliberate ReadWritePaths=/srv/<workspace> and OS ACLs.
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,31 @@
+# Copy to /etc/server-mcp/config.toml; replace ALL example URLs before starting.
+# OIDC provider must issue JWT *access* tokens with aud matching auth.resource and scopes below.
+[auth]
+issuer = "https://auth.example.com/realms/server-mcp"
+jwks_url = "https://auth.example.com/realms/server-mcp/protocol/openid-connect/certs"
+resource = "https://mcp.example.com/mcp"
+
+[server]
+host = "127.0.0.1"
+port = 8765
+state_dir = "/var/lib/server-mcp"
+
+[permissions]
+workspace_write_enabled = false
+operate_enabled = false
+
+# Host workspaces (read-only until workspace_write_enabled is explicitly enabled)
+[workspaces]
+sample = "/srv/server-mcp-workspace"
+
+[services]
+allow = ["example.service"]
+
+[containers]
+allow = [] # Avoid docker group on production; grants root-equivalent powers.
+
+# Only admin-specified argv and cwd are executable, after separate approval.
+# Add your application deploy/backup/diagnostic scripts here, never free-form shell.
+# [runbooks.deploy-sample]
+# workspace = "sample"
+# argv = ["/usr/local/bin/server-mcp-deploy-sample"]
