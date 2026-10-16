@@ -15,6 +15,10 @@ def test_workspace_escape_and_sensitive_paths(tmp_path: Path):
     (tmp_path / "outside").symlink_to("/etc", target_is_directory=True)
     with pytest.raises(PermissionError):
         within_workspace(tmp_path, "outside/passwd", write=True)
+    (tmp_path / ".env").write_text("secret")
+    (tmp_path / "alias").symlink_to(".env")
+    with pytest.raises(PermissionError):
+        within_workspace(tmp_path, "alias")
 
 
 def test_atomic_compare_and_swap(tmp_path: Path):
